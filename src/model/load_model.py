@@ -324,8 +324,7 @@ def load_model(
     torch_dtype = torch_dtype if torch_dtype in ["auto", None] else getattr(torch, torch_dtype)
 
     if quantization is not None:
-        quant_args = None
-        # quant_args = {"load_in_4bit": True} if quantization == 4 else {"load_in_8bit": True}
+        quant_args = {"load_in_4bit": True} if quantization == 4 else {"load_in_8bit": True}
         if quantization == 4:
             bnb_config = BitsAndBytesConfig(
                 load_in_4bit=True,
@@ -396,7 +395,7 @@ def load_model(
         torch_dtype=torch_dtype,
         config=config,
         trust_remote_code=trust_remote_code,
-        **quant_args,
+        #**quant_args,
     )
 
     # Path the model to use flash attention using OpenAssistant patching function
