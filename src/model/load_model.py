@@ -324,7 +324,8 @@ def load_model(
     torch_dtype = torch_dtype if torch_dtype in ["auto", None] else getattr(torch, torch_dtype)
 
     if quantization is not None:
-        quant_args = {"load_in_4bit": True} if quantization == 4 else {"load_in_8bit": True}
+        quant_args = None
+        # quant_args = {"load_in_4bit": True} if quantization == 4 else {"load_in_8bit": True}
         if quantization == 4:
             bnb_config = BitsAndBytesConfig(
                 load_in_4bit=True,
