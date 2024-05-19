@@ -17,6 +17,7 @@ from . import (
     ncbidisease,
     ontonotes,
     rams,
+    semeval2023task3subtask3,
     tacred,
     wikievents,
     wnut,
@@ -61,6 +62,7 @@ TASK_ID_TO_TASKS = {
     "CrossNER_woMISC_CrossNER_NATURAL_SCIENCES": "src.tasks.crossner",
     "CrossNER_woMISC_CrossNER_LITERATURE": "src.tasks.crossner",
     "CrossNER_woMISC_CrossNER_MUSIC": "src.tasks.crossner",
+    "SemEval2023Task3Subtask3": "src.tasks.semeval2023task3subtask3"
 }
 
 __all__ = [
@@ -83,6 +85,7 @@ __all__ = [
     "mitmovie",
     "mitrestaurant",
     "crossner",
+    "semeval2023task3subtask3",
     "TASK_ID_TO_TASKS",
     "task_id_to_guidelines",
 ]
@@ -217,5 +220,11 @@ def task_id_to_guidelines(task_id: str) -> Dict[str, Dict[str, List[str]]]:
         from src.tasks.crossner.guidelines_gold import GUIDELINES
 
         return GUIDELINES
+    
+    elif task_id.lower() == "semeval2023task3subtask3":
+        from src.tasks.semeval2023task3subtask3.guidelines_gold import GUIDELINES
+
+        return GUIDELINES
+    
     else:
         raise ValueError(f"Task {task_id} not supported.")
