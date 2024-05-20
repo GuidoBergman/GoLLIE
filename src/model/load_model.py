@@ -303,6 +303,7 @@ def load_model(
         config = PretrainedConfig.from_json_file(
             '/GoLLIE+-7b/checkpoint-939/adapter_config.json',
         )
+        config.model_type = 'llama'
 
     # Load the model tokenizer
 
