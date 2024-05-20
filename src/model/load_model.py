@@ -300,10 +300,16 @@ def load_model(
                 trust_remote_code=trust_remote_code,
             )
     except:
-        config = PretrainedConfig.from_json_file(
-            '/GoLLIE+-7b/checkpoint-939/adapter_config.json',
+        #config = PretrainedConfig.from_json_file(
+         #   '/GoLLIE+-7b/checkpoint-939/adapter_config.json',
+        #)
+        #config.model_type = 'llama'
+        config = AutoConfig.from_pretrained(
+               'HiTZ/GoLLIE-7B',
+                trust_remote_code=trust_remote_code,
+                pretraining_tp=1,  # Fix mat1 and mat2 shapes cannot be multiplied  error with LLaMA-2
+                # See https://github.com/huggingface/transformers/pull/24906
         )
-        config.model_type = 'llama'
 
     # Load the model tokenizer
 
