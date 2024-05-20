@@ -13,13 +13,15 @@ dataset_dir:
   /content/drive/MyDrive/Propaganda/Gollie/SemEval/
 train_tasks:
   - semeval2023task3subtask3.ner
+validation_tasks:
+  - semeval2023task3subtask3.ner
 test_tasks:
   - semeval2023task3subtask3.ner
 max_examples_per_task_train: 30000
 max_examples_per_task_val: 5000
 max_examples_per_task_test: null
-max_seq_length: 2048
-generation_max_length: 2048
+max_seq_length: 8192
+generation_max_length: 8192
 ignore_pad_token_for_loss: true
 prompt_loss_weight: 0.0
 

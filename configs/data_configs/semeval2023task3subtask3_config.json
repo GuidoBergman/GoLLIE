@@ -4,6 +4,7 @@
     "dataloader_cls": "src.tasks.semeval2023task3subtask3.data_loader.SemEvalDatasetLoader",
     "sampler_cls": "src.tasks.semeval2023task3subtask3.data_loader.SemEvalSampler",
     "train_file": "data/train",
+    "dev_file": "data/dev",
     "test_file": "data/dev",
     "prompt_template": "templates/prompt.txt",
     "seed": [0, 24, 42],
