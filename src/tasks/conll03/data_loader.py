@@ -32,9 +32,6 @@ def get_conll_hf(
     from datasets import load_dataset
 
     dataset = load_dataset("conll2003")
-    dataset['train'] = dataset['train'].select(range(32))
-    dataset['test'] = dataset['test'].select(range(32))
-    dataset['validation'] = dataset['validation'].select(range(32))
     id2label = dict(enumerate(dataset["train"].features["ner_tags"].feature.names))
     dataset_sentences: List[List[str]] = []
     dataset_entities: List[List[Entity]] = []

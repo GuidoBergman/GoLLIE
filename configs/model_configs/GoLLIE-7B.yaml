@@ -15,8 +15,6 @@ train_tasks:
   - semeval2023task3subtask3.ner
 validation_tasks:
   - semeval2023task3subtask3.ner
-test_tasks:
-  - semeval2023task3subtask3.ner
 max_examples_per_task_train: 30000
 max_examples_per_task_val: 5000
 max_examples_per_task_test: null
@@ -26,7 +24,7 @@ ignore_pad_token_for_loss: true
 prompt_loss_weight: 0.0
 
 # checkpoint settings
-output_dir: /GoLLIE+-7b_CodeLLaMA
+output_dir: /GoLLIE+-7b
 overwrite_output_dir: true
 load_best_model_at_end: false
 save_strategy: "epoch"

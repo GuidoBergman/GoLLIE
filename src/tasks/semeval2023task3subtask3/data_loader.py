@@ -1,5 +1,5 @@
 from typing import Dict, List, Tuple, Type, Union
-import ast
+
 
 from src.tasks.semeval2023task3subtask3.guidelines_gold import EXAMPLES, GUIDELINES
 from src.tasks.semeval2023task3subtask3.prompts import (
@@ -11,15 +11,16 @@ from src.tasks.label_encoding import rewrite_labels
 
 from ..utils_data import DatasetLoader, Sampler
 from ..utils_typing import Entity
+import os
 
 
 def get_spans(labels_file):
-     labels_dict = {}
-     attack_on_reputation = ['Appeal_to_Hypocrisy', 'Guilt_by_Association',  'Name_Calling-Labeling',  'Questioning_the_Reputation', 'Doubt']
-     manipulative_wordding = ['Exaggeration-Minimisation',  'Obfuscation-Vagueness-Confusion', 'Repetition', 'Loaded_Language']
+    spans = []
+    attack_on_reputation = ['Appeal_to_Hypocrisy', 'Guilt_by_Association',  'Name_Calling-Labeling',  'Questioning_the_Reputation', 'Doubt']
+    manipulative_wordding = ['Exaggeration-Minimisation',  'Obfuscation-Vagueness-Confusion', 'Repetition', 'Loaded_Language']
 
 
-     for line in labels_file:
+    for line in labels_file:
        parts = line.strip().split('\t')
        label = parts[1]
        if label in manipulative_wordding:
@@ -32,6 +33,10 @@ def get_spans(labels_file):
        start = int(parts[2])
        end = int(parts[3])
 
+       spans.append([label, start, end])
+
+    return spans
+
 def get_semeval(
     path: str,
     ENTITY_TO_CLASS_MAPPING: Dict[str, Type[Entity]],
@@ -39,49 +44,37 @@ def get_semeval(
     """
     Get the semeval dataset
     Args:
-        split (str): The path_or_split to load. Can be one of `train`, `validation` or `test`.
+        path (str): the path of the with the articles and the labels.
     Returns:
         (List[str],List[Union[AtackOnReputation,ManipulativeWording]]): The text and the entities
     """
-    from datasets import load_dataset
+    article_folder = os.path.join(path, 'articles')
+    label_folder  = os.path.join(path, 'labels')
+    article_files = os.listdir(article_folder)
 
-    dataset_str = load_dataset('csv', data_files=path)
-    dataset = dataset_str.map(lambda x: {
-                    'Tokens':ast.literal_eval(x['Tokens']),
-                    'Techniques':ast.literal_eval(x['Techniques'])
-                },
-                batched=False)
-    dataset = dataset['train'].select(range(32)) # Train is the default split
-    id2label = {0: 'O', 1: 'B-ATTREP', 2: 'I-ATTREP', 3: 'B-MANWOR', 4: 'I-MANWOR'}
+
     dataset_sentences: List[List[str]] = []
     dataset_entities: List[List[Entity]] = []
 
-    for example in dataset:
-        words = example["Tokens"]
-        # We convert lables to IOB2, so we don't have to deal with this later.
-        labels = rewrite_labels(labels=[id2label[label] for label in example["Techniques"]], encoding="iob2")
+    for article_file in article_files:
+        article_id = article_file.split('.')[0].replace('article', '')
+        article_path = os.path.join(article_folder, article_file)
+        label_path = os.path.join(label_folder, f'article{article_id}-labels-subtask-3.txt')
+        
+        with open(label_path, 'r') as labels_file:
+            spans = get_spans(labels_file)
 
-        # Get labeled word spans
-        spans = []
-        for i, label in enumerate(labels):
-            if label == "O":
-                continue
-            elif label.startswith("B-"):
-                spans.append([label[2:], i, i + 1])
-            elif label.startswith("I-"):
-                spans[-1][2] += 1
-            else:
-                raise ValueError(f"Found an unexpected label: {label}")
 
-        # Get entities
-        entities = []
-        for label, start, end in spans:
-            entities.append(ENTITY_TO_CLASS_MAPPING[label](span=" ".join(words[start:end])))
+        with open(article_path, 'r') as article_file:
+            words = article_file.read()
 
-        dataset_sentences.append(words)
-        dataset_entities.append(entities)
-        print(words)
-        print(entities)
+            # Get entities
+            entities = []
+            for label, start, end in spans:
+                entities.append(ENTITY_TO_CLASS_MAPPING[label](span=" ".join(words[start:end])))
+
+            dataset_sentences.append(words)
+            dataset_entities.append(entities)
 
     return dataset_sentences, dataset_entities
 
