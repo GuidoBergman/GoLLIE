@@ -62,7 +62,7 @@ TASK_ID_TO_TASKS = {
     "CrossNER_woMISC_CrossNER_NATURAL_SCIENCES": "src.tasks.crossner",
     "CrossNER_woMISC_CrossNER_LITERATURE": "src.tasks.crossner",
     "CrossNER_woMISC_CrossNER_MUSIC": "src.tasks.crossner",
-    "SemEval2023Task3Subtask3": "src.tasks.semeval2023task3subtask3"
+    "semeval2023task3subtask3_NER": "src.tasks.semeval2023task3subtask3"
 }
 
 __all__ = [
