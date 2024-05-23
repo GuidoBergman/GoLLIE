@@ -1,5 +1,5 @@
 from typing import Dict, List, Tuple, Type, Union
-
+import re
 
 from src.tasks.semeval2023task3subtask3.guidelines_gold import EXAMPLES, GUIDELINES
 from src.tasks.semeval2023task3subtask3.prompts import (
@@ -66,12 +66,14 @@ def get_semeval(
 
 
         with open(article_path, 'r') as article_file:
-            words = article_file.read()
+            article_content = article_file.read()
 
             # Get entities
             entities = []
             for label, start, end in spans:
-                entities.append(ENTITY_TO_CLASS_MAPPING[label](span=" ".join(words[start:end])))
+                entities.append(ENTITY_TO_CLASS_MAPPING[label](span=article_content[start:end]))
+
+            words = re.split(r'\s', article_content)
 
             dataset_sentences.append(words)
             dataset_entities.append(entities)
