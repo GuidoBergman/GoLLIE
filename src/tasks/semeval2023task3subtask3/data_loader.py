@@ -12,6 +12,7 @@ from src.tasks.label_encoding import rewrite_labels
 from ..utils_data import DatasetLoader, Sampler
 from ..utils_typing import Entity
 import os
+import re
 
 
 def get_spans(labels_file):
@@ -62,19 +63,35 @@ def get_semeval(
         label_path = os.path.join(label_folder, f'article{article_id}-labels-subtask-3.txt')
         
         with open(label_path, 'r') as labels_file:
-            spans = get_spans(labels_file)
+            spans_pos = get_spans(labels_file)
 
 
         with open(article_path, 'r') as article_file:
-            words = article_file.read()
+            article_content = article_file.read()
+            spans_text = []
+            for label, start, end in spans_pos:
+                text_unsplited = article_content[start:end]
+                texts = re.split(r'[.!?]\s*', text_unsplited)
+                for text in texts:
+                    spans_text.append([label,text])
 
-            # Get entities
-            entities = []
-            for label, start, end in spans:
-                entities.append(ENTITY_TO_CLASS_MAPPING[label](span=" ".join(words[start:end])))
+            sentences = re.split(r'[.!?]\s*', article_content)
+            sentences = [s.strip() for s in sentences if s.strip()]
 
-            dataset_sentences.append(words)
-            dataset_entities.append(entities)
+            
+            total_entities = 0
+            for sentence in sentences:
+                entities = [
+                    ENTITY_TO_CLASS_MAPPING[label](span=text) for label, text in spans_text if text in sentence
+                ]
+                total_entities += len(entities)
+
+                dataset_entities.append(entities)
+                dataset_sentences.append(sentence.split(' '))
+
+            if len(spans_pos) != total_entities:
+                print(f'Error in article {article_id} spans pos: {len(spans_pos)}   total_entities: {total_entities}')
+            
 
     return dataset_sentences, dataset_entities
 
