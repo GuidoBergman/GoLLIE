@@ -13,7 +13,6 @@ from transformers import (
     BitsAndBytesConfig,
     PreTrainedModel,
     PreTrainedTokenizerBase,
-    PretrainedConfig
 )
 from transformers.models.auto.modeling_auto import (
     MODEL_FOR_CAUSAL_LM_MAPPING_NAMES,
@@ -286,29 +285,17 @@ def load_model(
 
     # Load the model config
 
-    try:
-        if use_lora:
-            config = AutoConfig.from_pretrained(
-                model_weights_name_or_path,
-                trust_remote_code=trust_remote_code,
-                pretraining_tp=1,  # Fix mat1 and mat2 shapes cannot be multiplied  error with LLaMA-2
-                # See https://github.com/huggingface/transformers/pull/24906
-            )
-        else:
-            config = AutoConfig.from_pretrained(
-                model_weights_name_or_path,
-                trust_remote_code=trust_remote_code,
-            )
-    except:
-        #config = PretrainedConfig.from_json_file(
-         #   '/GoLLIE+-7b/checkpoint-939/adapter_config.json',
-        #)
-        #config.model_type = 'llama'
+    if use_lora:
         config = AutoConfig.from_pretrained(
-               'HiTZ/GoLLIE-7B',
-                trust_remote_code=trust_remote_code,
-                pretraining_tp=1,  # Fix mat1 and mat2 shapes cannot be multiplied  error with LLaMA-2
-                # See https://github.com/huggingface/transformers/pull/24906
+            model_weights_name_or_path,
+            trust_remote_code=trust_remote_code,
+            pretraining_tp=1,  # Fix mat1 and mat2 shapes cannot be multiplied  error with LLaMA-2
+            # See https://github.com/huggingface/transformers/pull/24906
+        )
+    else:
+        config = AutoConfig.from_pretrained(
+            model_weights_name_or_path,
+            trust_remote_code=trust_remote_code,
         )
 
     # Load the model tokenizer

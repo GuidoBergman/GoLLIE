@@ -14,6 +14,8 @@ from ..utils_typing import Entity
 import os
 
 
+MAX_ARTICLE_LENGTH = 7500
+
 def get_spans(labels_file):
     spans = []
     attack_on_reputation = ['Appeal_to_Hypocrisy', 'Guilt_by_Association',  'Name_Calling-Labeling',  'Questioning_the_Reputation', 'Doubt']
@@ -32,6 +34,9 @@ def get_spans(labels_file):
 
        start = int(parts[2])
        end = int(parts[3])
+
+       if end >= MAX_ARTICLE_LENGTH:
+           continue
 
        spans.append([label, start, end])
 
@@ -58,6 +63,9 @@ def get_semeval(
 
     for article_file in article_files:
         article_id = article_file.split('.')[0].replace('article', '')
+        # Manually removing problematic articles
+        if int(article_id) in (2331, 2328, 2287):
+            continue
         article_path = os.path.join(article_folder, article_file)
         label_path = os.path.join(label_folder, f'article{article_id}-labels-subtask-3.txt')
         
@@ -67,6 +75,7 @@ def get_semeval(
 
         with open(article_path, 'r') as article_file:
             article_content = article_file.read()
+            article_content = article_content[:MAX_ARTICLE_LENGTH]
 
             # Get entities
             entities = []
