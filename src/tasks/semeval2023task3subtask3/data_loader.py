@@ -15,7 +15,7 @@ import os
 import re
 
 
-def get_spans(labels_file):
+def get_spans(labels_file, article_content):
     spans = []
     attack_on_reputation = ['Appeal_to_Hypocrisy', 'Guilt_by_Association',  'Name_Calling-Labeling',  'Questioning_the_Reputation', 'Doubt']
     manipulative_wordding = ['Exaggeration-Minimisation',  'Obfuscation-Vagueness-Confusion', 'Repetition', 'Loaded_Language']
@@ -33,8 +33,9 @@ def get_spans(labels_file):
 
        start = int(parts[2])
        end = int(parts[3])
+       text = article_content[start:end]
 
-       spans.append([label, start, end])
+       spans.append([label, start, end, text])
 
     return spans
 
@@ -62,35 +63,75 @@ def get_semeval(
         article_path = os.path.join(article_folder, article_file)
         label_path = os.path.join(label_folder, f'article{article_id}-labels-subtask-3.txt')
         
-        with open(label_path, 'r') as labels_file:
-            spans_pos = get_spans(labels_file)
+
 
 
         with open(article_path, 'r') as article_file:
             article_content = article_file.read()
-            spans_text = []
-            for label, start, end in spans_pos:
-                text_unsplited = article_content[start:end]
-                texts = re.split(r'[.!?]\s*', text_unsplited)
-                for text in texts:
-                    spans_text.append([label,text])
+            with open(label_path, 'r') as labels_file:
+                spans_labels = get_spans(labels_file,article_content)
 
-            sentences = re.split(r'[.!?]\s*', article_content)
-            sentences = [s.strip() for s in sentences if s.strip()]
+            spans_sentences = []
+            start_span = 0
+            for i in range(len(article_content)):
+                if i+1 < len(article_content):
+            	    if article_content[i] == '\n' and article_content[i+1] == '\n':
+                        spans_sentences.append([start_span, i])
+                        start_span = i+2
+                # SI quedo algun span al terminar
+                elif start_span < i:
+                    spans_sentences.append([start_span, len(article_content)-1])
 
             
-            total_entities = 0
-            for sentence in sentences:
-                entities = [
-                    ENTITY_TO_CLASS_MAPPING[label](span=text) for label, text in spans_text if text in sentence
+            start_span = None
+            entities = []
+            count_entites = 0	
+            # Borrame
+            if int(article_id) == 221:
+                    for label, start, end, text in spans_labels:
+                         print('Texto etiqutas: ', text, ' start: ', start, ' end: ', end)	
+
+                    for span in spans_sentences:
+                        print('Start setnece: ', span[0], 'end_sentence: ', span[1])
+
+                         
+            for setence_start, setence_end in spans_sentences:
+            	#Find spans labels contained in span sentence
+                span_ends = [end for _, start, end, _  in spans_labels if start >= setence_start and start <= setence_end]
+                
+                entities += [
+            		ENTITY_TO_CLASS_MAPPING[label](span=text) for label, start, end, text in spans_labels if start >= setence_start and start <= setence_end
                 ]
-                total_entities += len(entities)
 
-                dataset_entities.append(entities)
-                dataset_sentences.append(sentence.split(' '))
 
-            if len(spans_pos) != total_entities:
-                print(f'Error in article {article_id} spans pos: {len(spans_pos)}   total_entities: {total_entities}')
+                # Borrame
+                if int(article_id) == 221:
+                    for entity in entities:
+                         print('Texto entites: ', entity.span)	
+
+                    print('start span: ', setence_start, ' span end:' , setence_end)
+            
+                if len(span_ends) > 0:
+                    max_span_end = max(span_ends)
+                else:
+                    max_span_end = -1
+            
+                if start_span is None:
+                    start_span = setence_start
+            
+                if max_span_end < setence_end:
+                    text = article_content[start_span:setence_end]
+                    dataset_sentences.append(text.split(' '))
+                    dataset_entities.append(entities)
+                    count_entites += len(entities)
+                    entities = []
+                    start_span = None            
+
+
+
+
+            if len(spans_labels) != count_entites:
+              print(f'Error in article {article_id} spans pos: {len(spans_labels)}   count_entites: {count_entites}')
             
 
     return dataset_sentences, dataset_entities
