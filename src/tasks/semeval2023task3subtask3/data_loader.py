@@ -1,6 +1,5 @@
 from typing import Dict, List, Tuple, Type, Union
 
-
 from src.tasks.semeval2023task3subtask3.guidelines_gold import EXAMPLES, GUIDELINES
 from src.tasks.semeval2023task3subtask3.prompts import (
     ENTITY_DEFINITIONS,
@@ -39,13 +38,9 @@ def get_spans(labels_file, article_content):
 
     return spans
 
-def uses_crlf(file_path):
-    with open(file_path, 'rb') as file:
-        content = file.read()
-        if b'\r\n' in content:
-            return True
-        else:
-             return False
+def is_sentence_ending(char):
+    ending_chars = ['.', '?', '!']
+    return char in ending_chars
 
 def get_semeval(
     path: str,
@@ -79,20 +74,12 @@ def get_semeval(
 
             spans_sentences = []
             start_span = 0
-            if uses_crlf(article_path):
-                for i in range(len(article_content)):
-                    if i+4 < len(article_content):
-                        if article_content[i:i+4] == '\r\n\r\n':
-                            spans_sentences.append([start_span, i])
-                            start_span = i+4
-            else:
-                for i in range(len(article_content)):
-                    if i+1 < len(article_content):
-            	        if article_content[i] == '\n' and article_content[i+1] == '\n':
-                            spans_sentences.append([start_span, i])
-                            start_span = i+2
+            for i in range(len(article_content)):
+                if is_sentence_ending(article_content[i]):
+                    spans_sentences.append([start_span, i])
+                    start_span = i+1
 
-            # Sí quedo algun span al terminar
+            # If there was one span left
             if start_span < len(article_content)-1:
                     spans_sentences.append([start_span,len(article_content)])         
 
