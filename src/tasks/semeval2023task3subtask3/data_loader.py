@@ -39,6 +39,14 @@ def get_spans(labels_file, article_content):
 
     return spans
 
+def uses_crlf(file_path):
+    with open(file_path, 'rb') as file:
+        content = file.read()
+        if b'\r\n' in content:
+            return True
+        else:
+             return False
+
 def get_semeval(
     path: str,
     ENTITY_TO_CLASS_MAPPING: Dict[str, Type[Entity]],
@@ -64,32 +72,40 @@ def get_semeval(
         label_path = os.path.join(label_folder, f'article{article_id}-labels-subtask-3.txt')
         
 
-
-
-        with open(article_path, 'r') as article_file:
+        with open(article_path, 'r', encoding='utf-8', newline='\r\n') as article_file:
             article_content = article_file.read()
             with open(label_path, 'r') as labels_file:
                 spans_labels = get_spans(labels_file,article_content)
 
             spans_sentences = []
             start_span = 0
-            for i in range(len(article_content)):
-                if i+1 < len(article_content):
-            	    if article_content[i] == '\n' and article_content[i+1] == '\n':
-                        spans_sentences.append([start_span, i])
-                        start_span = i+2
-                # SI quedo algun span al terminar
-                elif start_span < i:
-                    spans_sentences.append([start_span, len(article_content)-1])
+            if uses_crlf(article_path):
+                for i in range(len(article_content)):
+                    if i+4 < len(article_content):
+                        if article_content[i:i+4] == '\r\n\r\n':
+                            spans_sentences.append([start_span, i])
+                            start_span = i+4
+            else:
+                for i in range(len(article_content)):
+                    if i+1 < len(article_content):
+            	        if article_content[i] == '\n' and article_content[i+1] == '\n':
+                            spans_sentences.append([start_span, i])
+                            start_span = i+2
+
+            # Sí quedo algun span al terminar
+            if start_span < len(article_content)-1:
+                    spans_sentences.append([start_span,len(article_content)])         
 
             
             start_span = None
             entities = []
             count_entites = 0	
             # Borrame
-            if int(article_id) == 221:
+            if int(article_id) == 25115:
                     for label, start, end, text in spans_labels:
                          print('Texto etiqutas: ', text, ' start: ', start, ' end: ', end)	
+
+                    print('Article len:', len(article_content))
 
                     for span in spans_sentences:
                         print('Start setnece: ', span[0], 'end_sentence: ', span[1])
@@ -105,7 +121,7 @@ def get_semeval(
 
 
                 # Borrame
-                if int(article_id) == 221:
+                if int(article_id) == 25115:
                     for entity in entities:
                          print('Texto entites: ', entity.span)	
 
@@ -124,6 +140,9 @@ def get_semeval(
                     dataset_sentences.append(text.split(' '))
                     dataset_entities.append(entities)
                     count_entites += len(entities)
+                     # Borrame
+                    if int(article_id) == 25115:
+                        print('Entites to add: ', entities)
                     entities = []
                     start_span = None            
 
