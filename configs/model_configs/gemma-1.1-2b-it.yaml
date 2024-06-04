@@ -9,7 +9,7 @@ force_auto_device_map: true
 use_flash_attention: true
 
 dataset_dir:
-  /content/drive/MyDrive/Propaganda/Gollie/SemEval/
+  /content/drive/MyDrive/Propaganda/Gollie/SemEvalOnlyEnglish/
 train_tasks:
   - semeval2023task3subtask3.ner
 validation_tasks:
@@ -43,8 +43,8 @@ predict_with_generate: true
 evaluate_all_checkpoints: false
 
 # batch size
-per_device_train_batch_size: 4
-per_device_eval_batch_size: 2
+per_device_train_batch_size: 2
+per_device_eval_batch_size: 1
 gradient_accumulation_steps: 1
 generation_num_beams: 1
 
@@ -52,7 +52,7 @@ generation_num_beams: 1
 optim: adamw_torch_fused
 learning_rate: 0.0003
 weight_decay: 0.0
-num_train_epochs: 3
+num_train_epochs: 2
 lr_scheduler_type: cosine
 warmup_ratio: 0.03
 adam_epsilon: 1e-7
